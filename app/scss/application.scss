@@ -1,0 +1,99 @@
+$gray: rgba(0, 0, 0, 0.125);
+$darker-gray: rgba(0, 0, 0, 0.4);
+
+.center-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.app-item {
+  cursor: pointer;
+  padding-left: 10px !important;
+  height: 50px;
+
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  margin-bottom: -1px;
+
+  background-color: #fff;
+
+  &.selected {
+    cursor: default;
+  }
+
+  &:first-child {
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+  }
+
+  .money-div {
+    color: $darker-gray;
+  }
+
+  .money-box {
+    border: 1px $gray dotted;
+    height: 40px;
+    width: 50px;
+
+    input {
+      color: $darker-gray;
+      outline: none;
+      background: none;
+      border: none;
+      width: 100%;
+    }
+  }
+
+  .per-what {
+    font-size: 10px;
+    font-style: italic;
+  }
+}
+
+@import "functions";
+@import "variables";
+@import "mixins";
+@import "root";
+@import "reboot";
+@import "type";
+@import "images";
+@import "code";
+@import "grid";
+@import "tables";
+@import "forms";
+@import "buttons";
+@import "transitions";
+@import "dropdown";
+@import "button-group";
+@import "input-group";
+@import "custom-forms";
+@import "nav";
+@import "navbar";
+@import "card";
+@import "breadcrumb";
+@import "pagination";
+@import "badge";
+@import "jumbotron";
+@import "alert";
+@import "progress";
+@import "media";
+@import "list-group";
+@import "close";
+@import "modal";
+@import "tooltip";
+@import "popover";
+@import "carousel";
+@import "utilities";
+@import "print";
