@@ -17,6 +17,10 @@
   background-color: #fff; }
   .app-item.selected {
     cursor: default; }
+    .app-item.selected img.check {
+      cursor: pointer; }
+  .app-item a.site {
+    font-size: 12px; }
   .app-item:first-child {
     border-top-left-radius: .25rem;
     border-top-right-radius: .25rem; }
@@ -24,21 +28,22 @@
     margin-bottom: 0;
     border-bottom-right-radius: .25rem;
     border-bottom-left-radius: .25rem; }
-  .app-item .money-div {
-    color: rgba(0, 0, 0, 0.4); }
-  .app-item .money-box {
-    border: 1px rgba(0, 0, 0, 0.125) dotted;
-    height: 40px;
-    width: 50px; }
-    .app-item .money-box input {
-      color: rgba(0, 0, 0, 0.4);
-      outline: none;
-      background: none;
-      border: none;
-      width: 100%; }
   .app-item .per-what {
     font-size: 10px;
     font-style: italic; }
+
+.money-div {
+  color: rgba(0, 0, 0, 0.4);
+  width: 90px; }
+
+input.money-box {
+  border: 1px rgba(0, 0, 0, 0.125) dotted;
+  height: 40px;
+  width: 50px;
+  color: rgba(0, 0, 0, 0.4);
+  outline: none;
+  background: none;
+  width: 100%; }
 
 :root {
   --blue: #007bff;

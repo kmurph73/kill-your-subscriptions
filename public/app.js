@@ -148,7 +148,7 @@ var __makeRelativeRequire = function(require, mappings, pref) {
     return require(name);
   }
 };
-require.register("components/App.jsx", function(exports, require, module) {
+require.register("components/apps_view.jsx", function(exports, require, module) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -169,6 +169,14 @@ var _classnames = require('classnames');
 
 var _classnames2 = _interopRequireDefault(_classnames);
 
+var _app = require('models/app.js');
+
+var _app2 = _interopRequireDefault(_app);
+
+var _subscription_modal = require('./subscription_modal.jsx');
+
+var _subscription_modal2 = _interopRequireDefault(_subscription_modal);
+
 var _reactstrap = require('reactstrap');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -181,24 +189,24 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var App = function (_React$Component) {
-  _inherits(App, _React$Component);
+var AppsView = function (_React$Component) {
+  _inherits(AppsView, _React$Component);
 
-  function App(props) {
-    _classCallCheck(this, App);
+  function AppsView(props) {
+    _classCallCheck(this, AppsView);
 
-    var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (AppsView.__proto__ || Object.getPrototypeOf(AppsView)).call(this, props));
 
-    (0, _bindAll2.default)(_this, ['onInput', 'findMatches', 'switchTab', 'renderItem']);
+    (0, _bindAll2.default)(_this, ['onInput', 'findMatches', 'switchTab', 'renderItem', 'renderSelected', 'clickCheck', 'render', 'clickAddSubscription', 'onHideModal']);
 
     _this.state = {
-      apps: window.apps,
+      apps: _app2.default.getAll(),
       activeTab: '1'
     };
     return _this;
   }
 
-  _createClass(App, [{
+  _createClass(AppsView, [{
     key: 'onInput',
     value: function onInput(e) {
       var val = e.currentTarget.value;
@@ -254,9 +262,18 @@ var App = function (_React$Component) {
       return matches;
     }
   }, {
+    key: 'save',
+    value: function save() {
+      localStorage.setItem('addresses', JSON.stringify(json || this.getAll()));
+    }
+  }, {
     key: 'clickAddSubscription',
     value: function clickAddSubscription(e) {
       e.preventDefault();
+
+      this.setState({
+        editingApp: {}
+      });
     }
   }, {
     key: 'clickApp',
@@ -264,6 +281,7 @@ var App = function (_React$Component) {
       if (!app.selected) {
         app.selected = true;
 
+        _app2.default.saveToLocalStorage();
         this.setState(this.state);
       }
     }
@@ -273,11 +291,26 @@ var App = function (_React$Component) {
       this.setState({ activeTab: tab });
     }
   }, {
+    key: 'clickCheck',
+    value: function clickCheck(e, app) {
+      e.stopPropagation();
+      e.preventDefault();
+
+      app.selected = false;
+
+      this.setState(this.state);
+    }
+  }, {
+    key: 'inputBlurred',
+    value: function inputBlurred(e, app) {}
+  }, {
     key: 'renderSelected',
-    value: function renderSelected() {
+    value: function renderSelected(app) {
+      var _this2 = this;
+
       return _react2.default.createElement(
         'div',
-        { className: 'center-between' },
+        { className: 'center-between', key: app.uuid },
         _react2.default.createElement(
           'div',
           { className: 'center money-div mr-2' },
@@ -286,38 +319,55 @@ var App = function (_React$Component) {
             null,
             '$'
           ),
-          _react2.default.createElement(
-            'div',
-            { className: 'center money-box' },
-            _react2.default.createElement('input', { placeholder: '0.00' })
-          ),
+          _react2.default.createElement('input', { type: 'number', className: 'money-box', placeholder: '0.00', onBlur: function onBlur(e) {
+              return _this2.inputBlurred(e, app);
+            } }),
           _react2.default.createElement(
             'div',
             { className: 'per-what' },
-            '/mo'
+            '/',
+            app.type == 'monthly' ? 'mo' : 'year'
           )
         ),
-        _react2.default.createElement('img', { className: 'mx-2', style: { width: 20 }, src: '/check.svg' })
+        _react2.default.createElement('img', { onClick: function onClick(e) {
+            return _this2.clickCheck(e, app);
+          }, className: 'check mx-2', style: { width: 20 }, src: '/cancel-inactive.svg' }),
+        _react2.default.createElement('img', { onClick: function onClick(e) {
+            return _this2.clickCheck(e, app);
+          }, className: 'check mx-2', style: { width: 20 }, src: '/check.svg' })
       );
     }
   }, {
     key: 'renderItem',
     value: function renderItem(app) {
-      var _this2 = this;
+      var _this3 = this;
 
       var classes = (0, _classnames2.default)({ selected: app.selected });
 
       return _react2.default.createElement(
         'div',
         { className: "center-between app-item " + classes, onClick: function onClick() {
-            return _this2.clickApp(app);
-          }, key: app.terse },
+            return _this3.clickApp(app);
+          }, key: app.uuid },
         _react2.default.createElement(
           'div',
           null,
-          app.name
+          _react2.default.createElement(
+            'div',
+            null,
+            app.name
+          ),
+          app.selected && _react2.default.createElement(
+            'div',
+            null,
+            _react2.default.createElement(
+              'a',
+              { className: 'site', href: app.site, target: '_blank' },
+              app.site
+            )
+          )
         ),
-        app.selected ? this.renderSelected() : null
+        app.selected ? this.renderSelected(app) : null
       );
     }
   }, {
@@ -355,21 +405,56 @@ var App = function (_React$Component) {
           )
         );
       } else {
-        _react2.default.createElement(
-          'p',
+        var _React$createElement2;
+
+        var apps = this.state.apps.filter(function (a) {
+          return a.selected;
+        });
+        return _react2.default.createElement(
+          'div',
           null,
-          'your subs'
+          _react2.default.createElement(
+            'div',
+            { className: 'center mt-1' },
+            _react2.default.createElement(
+              _reactstrap.Button,
+              { onClick: this.clickAddSubscription, outline: true, color: 'primary' },
+              'Add Subscription'
+            ),
+            ' '
+          ),
+          _react2.default.createElement(
+            'div',
+            { className: 'center mt-1' },
+            _react2.default.createElement(
+              'div',
+              (_React$createElement2 = { className: 'list-group' }, _defineProperty(_React$createElement2, 'className', 'mt-1'), _defineProperty(_React$createElement2, 'style', { width: 400 }), _React$createElement2),
+              apps.map(this.renderItem)
+            )
+          )
         );
       }
     }
   }, {
+    key: 'onHideModal',
+    value: function onHideModal() {
+      this.setState({
+        editingApp: null
+      });
+    }
+  }, {
     key: 'render',
     value: function render() {
-      var _this3 = this;
+      var _this4 = this;
+
+      var your_apps = this.state.apps.filter(function (a) {
+        return a.selected;
+      });
 
       return _react2.default.createElement(
         'div',
-        { id: 'content' },
+        { className: 'container', id: 'content' },
+        _react2.default.createElement(_subscription_modal2.default, { editingApp: this.state.editingApp, onHideModal: this.onHideModal }),
         _react2.default.createElement(
           'h5',
           { style: { textAlign: 'center' } },
@@ -386,7 +471,7 @@ var App = function (_React$Component) {
               {
                 className: (0, _classnames2.default)({ active: this.state.activeTab === '1' }),
                 onClick: function onClick() {
-                  _this3.switchTab('1');
+                  _this4.switchTab('1');
                 }
               },
               'Subscriptions'
@@ -400,10 +485,12 @@ var App = function (_React$Component) {
               {
                 className: (0, _classnames2.default)({ active: this.state.activeTab === '2' }),
                 onClick: function onClick() {
-                  _this3.switchTab('2');
+                  _this4.switchTab('2');
                 }
               },
-              'Your Subscriptions'
+              'Your Subscriptions (',
+              your_apps.length,
+              ')'
             )
           )
         ),
@@ -412,10 +499,10 @@ var App = function (_React$Component) {
     }
   }]);
 
-  return App;
+  return AppsView;
 }(_react2.default.Component);
 
-exports.default = App;
+exports.default = AppsView;
 });
 
 ;require.register("components/subscription_modal.jsx", function(exports, require, module) {
@@ -457,23 +544,11 @@ var SubscriptionModal = function (_React$Component) {
       modal: false
     };
 
-    (0, _bindAll2.default)(_this, ['toggle', 'onSubmit']);
-
-    _this.toggle = _this.toggle.bind(_this);
+    (0, _bindAll2.default)(_this, ['onSubmit']);
     return _this;
   }
 
   _createClass(SubscriptionModal, [{
-    key: 'toggle',
-    value: function toggle(e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      this.setState({
-        modal: !this.state.modal
-      });
-    }
-  }, {
     key: 'onSubmit',
     value: function onSubmit(e) {
       e.preventDefault();
@@ -482,36 +557,75 @@ var SubscriptionModal = function (_React$Component) {
     key: 'render',
     value: function render() {
       return _react2.default.createElement(
-        'div',
-        null,
+        _reactstrap.Modal,
+        { isOpen: !!this.props.editingApp, className: this.props.className },
         _react2.default.createElement(
-          _reactstrap.Button,
-          { color: 'danger', onClick: this.toggle },
-          this.props.buttonLabel
+          _reactstrap.ModalHeader,
+          null,
+          'Add a subscription'
         ),
         _react2.default.createElement(
-          _reactstrap.Modal,
-          { isOpen: this.state.modal, toggle: this.toggle, className: this.props.className },
+          _reactstrap.ModalBody,
+          null,
           _react2.default.createElement(
-            _reactstrap.ModalHeader,
-            { toggle: this.toggle },
-            'Add a subscription'
-          ),
-          _react2.default.createElement(
-            _reactstrap.ModalBody,
-            null,
+            _reactstrap.Form,
+            { onSubmit: this.onSubmit },
             _react2.default.createElement(
-              Form,
-              { onSubmit: this.onSubmit },
-              _react2.default.createElement(Input, { placeholder: 'subscription name' }),
+              _reactstrap.FormGroup,
+              null,
+              _react2.default.createElement(_reactstrap.Input, { placeholder: 'subscription name' })
+            ),
+            _react2.default.createElement(
+              _reactstrap.FormGroup,
+              { className: 'd-flex' },
+              _react2.default.createElement(_reactstrap.Input, { className: 'mr-2', name: 'select', type: 'number', placeholder: '0.00', style: { width: 90 } }),
+              _react2.default.createElement(
+                _reactstrap.Input,
+                { type: 'select', name: 'frequency', className: 'ml-2' },
+                _react2.default.createElement(
+                  'option',
+                  null,
+                  'monthly'
+                ),
+                _react2.default.createElement(
+                  'option',
+                  null,
+                  'yearly'
+                )
+              )
+            ),
+            _react2.default.createElement(
+              _reactstrap.FormGroup,
+              null,
+              _react2.default.createElement(
+                _reactstrap.Label,
+                null,
+                'Website'
+              ),
+              _react2.default.createElement(_reactstrap.Input, { placeholder: 'https://blah.com' })
+            ),
+            _react2.default.createElement(
+              _reactstrap.FormGroup,
+              { className: 'ml-4' },
+              _react2.default.createElement(
+                _reactstrap.Label,
+                { check: true },
+                _react2.default.createElement(_reactstrap.Input, { type: 'checkbox' }),
+                ' ',
+                'I have cancelled this membership.'
+              )
+            ),
+            _react2.default.createElement(
+              'div',
+              { className: 'center-between mt-3' },
               _react2.default.createElement(
                 _reactstrap.Button,
-                { color: 'secondary', onClick: this.toggle },
+                { color: 'secondary', onClick: this.props.onHideModal },
                 'Cancel'
               ),
               _react2.default.createElement(
                 _reactstrap.Button,
-                { color: 'primary', onClick: this.toggle },
+                { color: 'primary' },
                 'Add'
               ),
               ' '
@@ -539,9 +653,13 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _App = require('components/App');
+var _app = require('models/app.js');
 
-var _App2 = _interopRequireDefault(_App);
+var _app2 = _interopRequireDefault(_app);
+
+var _apps_view = require('components/apps_view.jsx');
+
+var _apps_view2 = _interopRequireDefault(_apps_view);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -551,19 +669,140 @@ document.addEventListener('DOMContentLoaded', function () {
   fetch('/subscription_apps.json').then(function (r) {
     return r.json();
   }).then(function (json) {
-    window.apps = json.apps.map(function (app) {
-      return {
-        name: app,
-        terse: app.toLowerCase().replace(/\s/, '')
-      };
-    });
+    window.apps = json.apps;
 
-    _reactDom2.default.render(_react2.default.createElement(_App2.default, null), document.querySelector('#app'));
+    _reactDom2.default.render(_react2.default.createElement(_apps_view2.default, null), document.querySelector('#app'));
   });
 });
 });
 
-require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
+require.register("models/app.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _util = require('../util.js');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var json_attrs = ['uuid', 'name', 'selected', 'amount', 'frequency', 'site'];
+
+var App = function () {
+  function App(attrs) {
+    _classCallCheck(this, App);
+
+    for (var prop in attrs) {
+      this[prop] = attrs[prop];
+    }
+
+    if (!this.uuid) {
+      this.uuid = (0, _util.genUUID)(attrs.name);
+    }
+  }
+
+  _createClass(App, [{
+    key: 'tersify',
+    value: function tersify(name) {
+      return name.toLowerCase().replace(/\s/, '');
+    }
+  }, {
+    key: 'setName',
+    value: function setName(name) {
+      this.name = name;
+      this.terse = this.tersify(name);
+
+      App.saveToLocalStorage();
+    }
+  }, {
+    key: 'setSelected',
+    value: function setSelected(val) {
+      this.selected = val;
+
+      App.saveToLocalStorage();
+    }
+  }, {
+    key: 'toJSON',
+    value: function toJSON() {
+      var json = {};
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = json_attrs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var a = _step.value;
+
+          json[a] = this[a];
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      return json;
+    }
+  }], [{
+    key: 'getAll',
+    value: function getAll() {
+      if (this.apps) {
+        return this.apps;
+      }
+
+      var apps = JSON.parse(localStorage.getItem('apps')) || window.apps;
+      this.apps = apps.map(function (a) {
+        return new App(a);
+      });
+
+      return this.apps;
+    }
+  }, {
+    key: 'saveToLocalStorage',
+    value: function saveToLocalStorage(json) {
+      localStorage.setItem('apps', JSON.stringify(this.getAll()));
+    }
+  }]);
+
+  return App;
+}();
+
+exports.default = App;
+});
+
+require.register("util.js", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.genUUID = undefined;
+
+var _v = require('uuid/v5');
+
+var _v2 = _interopRequireDefault(_v);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var genUUID = exports.genUUID = function genUUID(email) {
+  return (0, _v2.default)(email, _v2.default.URL);
+};
+});
+
+;require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
   
 });})();require('___globals___');
 

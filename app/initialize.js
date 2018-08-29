@@ -1,18 +1,14 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import App from 'components/App';
+import App from 'models/app.js';
+import AppsView from 'components/apps_view.jsx';
 
 let time = Date.now()
 
 document.addEventListener('DOMContentLoaded', () => {
   fetch('/subscription_apps.json').then(r => r.json()).then((json) => {
-    window.apps = json.apps.map((app) => {
-      return {
-        name: app,
-        terse: app.toLowerCase().replace(/\s/, '')
-      }
-    });
+    window.apps = json.apps;
 
-    ReactDOM.render(<App />, document.querySelector('#app'));
+    ReactDOM.render(<AppsView />, document.querySelector('#app'));
   });
 });

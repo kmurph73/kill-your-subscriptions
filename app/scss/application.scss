@@ -25,6 +25,14 @@ $darker-gray: rgba(0, 0, 0, 0.4);
 
   &.selected {
     cursor: default;
+
+    img.check {
+      cursor: pointer;
+    }
+  }
+
+  a.site {
+    font-size: 12px;
   }
 
   &:first-child {
@@ -38,28 +46,27 @@ $darker-gray: rgba(0, 0, 0, 0.4);
     border-bottom-left-radius: .25rem;
   }
 
-  .money-div {
-    color: $darker-gray;
-  }
-
-  .money-box {
-    border: 1px $gray dotted;
-    height: 40px;
-    width: 50px;
-
-    input {
-      color: $darker-gray;
-      outline: none;
-      background: none;
-      border: none;
-      width: 100%;
-    }
-  }
 
   .per-what {
     font-size: 10px;
     font-style: italic;
   }
+}
+
+.money-div {
+  color: $darker-gray;
+  width: 90px;
+}
+
+input.money-box {
+  border: 1px $gray dotted;
+  height: 40px;
+  width: 50px;
+
+  color: $darker-gray;
+  outline: none;
+  background: none;
+  width: 100%;
 }
 
 @import "functions";
