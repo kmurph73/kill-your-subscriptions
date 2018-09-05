@@ -1,74 +1,3 @@
-$gray: rgba(0, 0, 0, 0.125);
-$darker-gray: rgba(0, 0, 0, 0.4);
-
-.center-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.app-item {
-  cursor: pointer;
-  padding-left: 10px !important;
-  height: 50px;
-
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  margin-bottom: -1px;
-
-  background-color: #fff;
-
-  &.selected {
-    cursor: default;
-
-    img.check {
-      cursor: pointer;
-    }
-  }
-
-  a.site {
-    font-size: 12px;
-  }
-
-  &:first-child {
-    border-top-left-radius: .25rem;
-    border-top-right-radius: .25rem;
-  }
-
-  &:last-child {
-    margin-bottom: 0;
-    border-bottom-right-radius: .25rem;
-    border-bottom-left-radius: .25rem;
-  }
-
-
-  .per-what {
-    font-size: 10px;
-    font-style: italic;
-  }
-}
-
-.money-div {
-  color: $darker-gray;
-  width: 90px;
-}
-
-input.money-box {
-  border: 1px $gray dotted;
-  height: 40px;
-  width: 50px;
-
-  color: $darker-gray;
-  outline: none;
-  background: none;
-  width: 100%;
-}
-
 @import "functions";
 @import "variables";
 @import "mixins";
@@ -104,3 +33,88 @@ input.money-box {
 @import "carousel";
 @import "utilities";
 @import "print";
+
+@import 'react-toggle';
+
+$gray: rgba(0, 0, 0, 0.125);
+$darker-gray: rgba(0, 0, 0, 0.4);
+
+.center-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+h5.lets-kill {
+  text-align: center;
+}
+
+.starting-amount {
+  font-weight: bold;
+}
+
+.current-amount {
+  font-weight: bold;
+}
+
+.app-item {
+  cursor: pointer;
+  padding-left: 10px !important;
+  height: 50px;
+
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  margin-bottom: -1px;
+
+  background-color: #fff;
+
+  &.selected {
+    cursor: default;
+
+    img.check {
+      cursor: pointer;
+    }
+  }
+
+  a.site {
+    font-size: 12px;
+  }
+
+  &:first-child {
+    border-top-left-radius: .25rem;
+    border-top-right-radius: .25rem;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+  }
+
+  .per-what {
+    font-size: 10px;
+    font-style: italic;
+  }
+}
+
+.money-div {
+  color: $darker-gray;
+  width: 90px;
+}
+
+input.money-box {
+  border: 1px $gray dotted;
+  height: 40px;
+  width: 50px;
+
+  color: $darker-gray;
+  outline: none;
+  background: none;
+  width: 100%;
+}
+

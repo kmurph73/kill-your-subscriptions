@@ -14,6 +14,7 @@
     "lodash": "^4.17.10",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+    "react-toggle": "^4.0.2",
     "reactstrap": "^6.4.0",
     "uuid": "^3.3.2"
   },

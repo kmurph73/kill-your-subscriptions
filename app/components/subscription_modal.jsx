@@ -41,13 +41,6 @@ class SubscriptionModal extends React.Component {
               <Input placeholder="https://blah.com" />
             </FormGroup>
 
-            <FormGroup className='ml-4'>
-              <Label check>
-                <Input type="checkbox" />{' '}
-                I have cancelled this membership.
-              </Label>
-            </FormGroup>
-
             <div className='center-between mt-3'>
               <Button color="secondary" onClick={this.props.onHideModal}>Cancel</Button>
               <Button color="primary">Add</Button>{' '}

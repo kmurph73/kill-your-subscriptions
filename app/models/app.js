@@ -1,4 +1,6 @@
 import { genUUID } from '../util.js';
+import sumBy from 'lodash/sumBy';
+import map from 'lodash/map';
 
 const json_attrs = ['uuid', 'name', 'selected', 'amount', 'frequency', 'site']
 
@@ -47,6 +49,14 @@ class App {
     }
 
     return json;
+  }
+
+  static allToJSON() {
+    return map(this.getAll(), a => a.toJSON())
+  }
+
+  static sumAmountsCents() {
+    return sumBy(this.getAll(), app => app.amount_cents || 0)
   }
 
   static saveToLocalStorage(json) {

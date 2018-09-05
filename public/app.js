@@ -169,6 +169,12 @@ var _classnames = require('classnames');
 
 var _classnames2 = _interopRequireDefault(_classnames);
 
+var _util = require('../util.js');
+
+var _reactToggle = require('react-toggle');
+
+var _reactToggle2 = _interopRequireDefault(_reactToggle);
+
 var _app = require('models/app.js');
 
 var _app2 = _interopRequireDefault(_app);
@@ -197,11 +203,12 @@ var AppsView = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (AppsView.__proto__ || Object.getPrototypeOf(AppsView)).call(this, props));
 
-    (0, _bindAll2.default)(_this, ['onInput', 'findMatches', 'switchTab', 'renderItem', 'renderSelected', 'clickCheck', 'render', 'clickAddSubscription', 'onHideModal']);
+    (0, _bindAll2.default)(_this, ['onInput', 'findMatches', 'switchTab', 'renderItem', 'renderSelected', 'clickCheck', 'render', 'clickAddSubscription', 'onHideModal', 'handleAmountModeChange']);
 
     _this.state = {
-      apps: _app2.default.getAll(),
-      activeTab: '1'
+      apps: _app2.default.allToJSON(),
+      activeTab: '1',
+      amountMode: 'starting'
     };
     return _this;
   }
@@ -282,13 +289,20 @@ var AppsView = function (_React$Component) {
         app.selected = true;
 
         _app2.default.saveToLocalStorage();
-        this.setState(this.state);
+        this.resetAppsState();
       }
     }
   }, {
     key: 'switchTab',
     value: function switchTab(tab) {
       this.setState({ activeTab: tab });
+    }
+  }, {
+    key: 'resetAppsState',
+    value: function resetAppsState() {
+      this.setState({
+        apps: _app2.default.allToJSON()
+      });
     }
   }, {
     key: 'clickCheck',
@@ -298,11 +312,15 @@ var AppsView = function (_React$Component) {
 
       app.selected = false;
 
-      this.setState(this.state);
+      this.resetAppsState();
     }
   }, {
-    key: 'inputBlurred',
-    value: function inputBlurred(e, app) {}
+    key: 'amountInputted',
+    value: function amountInputted(e, app) {
+      app.amount_cents = (0, _util.dollarStringToCents)(e.currentTarget.value);
+
+      this.resetAppsState();
+    }
   }, {
     key: 'renderSelected',
     value: function renderSelected(app) {
@@ -319,8 +337,8 @@ var AppsView = function (_React$Component) {
             null,
             '$'
           ),
-          _react2.default.createElement('input', { type: 'number', className: 'money-box', placeholder: '0.00', onBlur: function onBlur(e) {
-              return _this2.inputBlurred(e, app);
+          _react2.default.createElement('input', { type: 'number', className: 'money-box', placeholder: '0.00', onInput: function onInput(e) {
+              return _this2.amountInputted(e, app);
             } }),
           _react2.default.createElement(
             'div',
@@ -329,13 +347,17 @@ var AppsView = function (_React$Component) {
             app.type == 'monthly' ? 'mo' : 'year'
           )
         ),
-        _react2.default.createElement('img', { onClick: function onClick(e) {
-            return _this2.clickCheck(e, app);
-          }, className: 'check mx-2', style: { width: 20 }, src: '/cancel-inactive.svg' }),
-        _react2.default.createElement('img', { onClick: function onClick(e) {
+        this.state.activeTab === '1' && _react2.default.createElement('img', { onClick: function onClick(e) {
             return _this2.clickCheck(e, app);
           }, className: 'check mx-2', style: { width: 20 }, src: '/check.svg' })
       );
+    }
+  }, {
+    key: 'handleAmountModeChange',
+    value: function handleAmountModeChange(e) {
+      this.setState({
+        amountMode: this.state.amountMode === 'starting' ? 'current' : 'starting'
+      });
     }
   }, {
     key: 'renderItem',
@@ -373,6 +395,9 @@ var AppsView = function (_React$Component) {
   }, {
     key: 'renderTabContent',
     value: function renderTabContent() {
+      var mode = this.state.amountMode;
+      var txt = mode === 'starting' ? 'Showing starting amounts' : 'Showing current amounts';
+
       if (this.state.activeTab === '1') {
         var _React$createElement;
 
@@ -386,13 +411,27 @@ var AppsView = function (_React$Component) {
           ),
           _react2.default.createElement(
             'div',
-            { className: 'center mt-1' },
+            { className: 'center-between mt-1' },
             _react2.default.createElement(
               _reactstrap.Button,
               { onClick: this.clickAddSubscription, outline: true, color: 'primary' },
               'Add Subscription'
             ),
-            ' '
+            ' ',
+            _react2.default.createElement(
+              'div',
+              { className: 'center' },
+              _react2.default.createElement(_reactToggle2.default, {
+                id: 'amount-mode',
+                defaultChecked: this.state.amountMode == 'starting',
+                icons: false,
+                onChange: this.handleAmountModeChange }),
+              _react2.default.createElement(
+                'span',
+                { className: 'ml-1', id: 'amount-mode' },
+                txt
+              )
+            )
           ),
           _react2.default.createElement(
             'div',
@@ -400,16 +439,17 @@ var AppsView = function (_React$Component) {
             _react2.default.createElement(
               'div',
               (_React$createElement = { className: 'list-group' }, _defineProperty(_React$createElement, 'className', 'mt-1'), _defineProperty(_React$createElement, 'style', { width: 400 }), _React$createElement),
-              this.state.apps.map(this.renderItem)
+              _app2.default.getAll().map(this.renderItem)
             )
           )
         );
       } else {
         var _React$createElement2;
 
-        var apps = this.state.apps.filter(function (a) {
+        var apps = _app2.default.getAll().filter(function (a) {
           return a.selected;
         });
+
         return _react2.default.createElement(
           'div',
           null,
@@ -447,7 +487,7 @@ var AppsView = function (_React$Component) {
     value: function render() {
       var _this4 = this;
 
-      var your_apps = this.state.apps.filter(function (a) {
+      var your_apps = _app2.default.getAll().filter(function (a) {
         return a.selected;
       });
 
@@ -457,8 +497,19 @@ var AppsView = function (_React$Component) {
         _react2.default.createElement(_subscription_modal2.default, { editingApp: this.state.editingApp, onHideModal: this.onHideModal }),
         _react2.default.createElement(
           'h5',
-          { style: { textAlign: 'center' } },
+          { className: 'lets-kill' },
           'Let\'s kill your subscriptions.'
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: 'starting-amount my-2' },
+          'Starting amount: ',
+          (0, _util.centsToDollaString)(_app2.default.sumAmountsCents())
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: 'current-amount my-2' },
+          'Current amount: $0'
         ),
         _react2.default.createElement(
           _reactstrap.Nav,
@@ -503,6 +554,64 @@ var AppsView = function (_React$Component) {
 }(_react2.default.Component);
 
 exports.default = AppsView;
+});
+
+;require.register("components/cancel_button.jsx", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactstrap = require('reactstrap');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var CancelButton = function (_React$Component) {
+  _inherits(CancelButton, _React$Component);
+
+  function CancelButton(props) {
+    _classCallCheck(this, CancelButton);
+
+    var _this = _possibleConstructorReturn(this, (CancelButton.__proto__ || Object.getPrototypeOf(CancelButton)).call(this, props));
+
+    _this.toggle = _this.toggle.bind(_this);
+    _this.state = {
+      tooltipOpen: false
+    };
+    return _this;
+  }
+
+  _createClass(CancelButton, [{
+    key: 'toggle',
+    value: function toggle() {
+      this.setState({
+        tooltipOpen: !this.state.tooltipOpen
+      });
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      return _react2.default.createElement('div', null);
+    }
+  }]);
+
+  return CancelButton;
+}(_react2.default.Component);
+
+exports.default = CancelButton;
 });
 
 ;require.register("components/subscription_modal.jsx", function(exports, require, module) {
@@ -605,17 +714,6 @@ var SubscriptionModal = function (_React$Component) {
               _react2.default.createElement(_reactstrap.Input, { placeholder: 'https://blah.com' })
             ),
             _react2.default.createElement(
-              _reactstrap.FormGroup,
-              { className: 'ml-4' },
-              _react2.default.createElement(
-                _reactstrap.Label,
-                { check: true },
-                _react2.default.createElement(_reactstrap.Input, { type: 'checkbox' }),
-                ' ',
-                'I have cancelled this membership.'
-              )
-            ),
-            _react2.default.createElement(
               'div',
               { className: 'center-between mt-3' },
               _react2.default.createElement(
@@ -686,6 +784,16 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _util = require('../util.js');
+
+var _sumBy = require('lodash/sumBy');
+
+var _sumBy2 = _interopRequireDefault(_sumBy);
+
+var _map = require('lodash/map');
+
+var _map2 = _interopRequireDefault(_map);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -771,6 +879,20 @@ var App = function () {
       return this.apps;
     }
   }, {
+    key: 'allToJSON',
+    value: function allToJSON() {
+      return (0, _map2.default)(this.getAll(), function (a) {
+        return a.toJSON();
+      });
+    }
+  }, {
+    key: 'sumAmountsCents',
+    value: function sumAmountsCents() {
+      return (0, _sumBy2.default)(this.getAll(), function (app) {
+        return app.amount_cents || 0;
+      });
+    }
+  }, {
     key: 'saveToLocalStorage',
     value: function saveToLocalStorage(json) {
       localStorage.setItem('apps', JSON.stringify(this.getAll()));
@@ -789,7 +911,7 @@ require.register("util.js", function(exports, require, module) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.genUUID = undefined;
+exports.centsToDollaString = exports.dollarStringToCents = exports.genUUID = undefined;
 
 var _v = require('uuid/v5');
 
@@ -800,9 +922,34 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var genUUID = exports.genUUID = function genUUID(email) {
   return (0, _v2.default)(email, _v2.default.URL);
 };
+
+// eg 9.99 => 999, or $7.77 => 777
+// HT: https://codereview.stackexchange.com/a/3530
+var dollarStringToCents = exports.dollarStringToCents = function dollarStringToCents(money_string) {
+  return Math.round(100 * parseFloat(money_string.replace(/[$,]/g, '')));
+};
+
+// http://stackoverflow.com/a/33286686/548170
+var centsToDollaString = exports.centsToDollaString = function centsToDollaString(x, dollar_sign) {
+  if (dollar_sign == null) {
+    dollar_sign = true;
+  }
+  var cents = x + '';
+  while (cents.length < 4) {
+    cents = '0' + cents;
+  }
+  var dollars = cents.substr(0, cents.length - 2);
+  var decimal = cents.substr(cents.length - 2, 2);
+  while (dollars.length % 3 !== 0) {
+    dollars = '0' + dollars;
+  }
+  var str = dollars.replace(/(\d{3})(?=\d)/g, '$1,').replace(/^0*(?=.)/, '');
+  return (dollar_sign ? '$' : '') + str + '.' + decimal;
+};
 });
 
-;require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
+;require.alias("buffer/index.js", "buffer");
+require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
   
 });})();require('___globals___');
 
