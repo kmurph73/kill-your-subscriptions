@@ -2,13 +2,18 @@ import { genUUID } from '../util.js';
 import sumBy from 'lodash/sumBy';
 import map from 'lodash/map';
 
-const json_attrs = ['uuid', 'name', 'selected', 'amount', 'frequency', 'site']
+const json_attrs = ['uuid', 'name', 'selected', 'starting_amount_cents', 'current_amount_cents', 'frequency', 'site']
+
+import { centsToDollaString } from '../util.js';
 
 class App {
   constructor(attrs) {
     for (let prop in attrs) {
       this[prop] = attrs[prop];
     }
+
+    this.starting_amount_cents_value = attrs.starting_amount_cents ? centsToDollaString(attrs.starting_amount_cents).replace('$', '') : ''
+    this.current_amount_cents_value = attrs.current_amount_cents ? centsToDollaString(attrs.current_amount_cents).replace('$', '') : ''
 
     if (!this.uuid) {
       this.uuid = genUUID(attrs.name);
@@ -41,6 +46,10 @@ class App {
     return this.apps;
   }
 
+  static getSelected() {
+    return App.getAll().filter(a => a.selected);
+  }
+
   toJSON() {
     const json = {};
 
@@ -51,12 +60,47 @@ class App {
     return json;
   }
 
+  static blankApp() {
+    return {
+      name: '',
+      amount: '',
+      website: '',
+      frequency: 'monthly'
+    }
+  }
+
+  static clonedApp(app) {
+    app = Object.assign(App.blankApp(), app.toJSON())
+    delete app.uuid
+
+    return app;
+  }
+
+  static find(uuid) {
+    return App.getAll().find(a => a.uuid === uuid);
+  }
+
+  static remove(app) {
+    this.apps = this.getAll().filter(a => a.uuid != app.uuid)
+    App.saveToLocalStorage()
+  }
+
+  static addApp(data) {
+    let app = new App(data)
+    App.getAll().push(app)
+    App.saveToLocalStorage()
+  }
+
   static allToJSON() {
     return map(this.getAll(), a => a.toJSON())
   }
 
-  static sumAmountsCents() {
-    return sumBy(this.getAll(), app => app.amount_cents || 0)
+  static sumStartingAmountsCents() {
+    return sumBy(this.getSelected(), app => app.starting_amount_cents || 0)
+  }
+
+  static sumCurrentAmountsCents() {
+    return sumBy(this.getSelected(), app => app.current_amount_cents || 0)
   }
 
   static saveToLocalStorage(json) {
