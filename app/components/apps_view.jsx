@@ -199,11 +199,11 @@ export default class AppsView extends React.Component {
         <h5 className='lets-kill'>Let's kill your subscriptions.</h5>
 
         <div className='starting-amount my-2'>
-          Starting amount: {centsToDollaString(App.sumStartingAmountsCents())}
+          Starting amount: {centsToDollaString(App.sumStartingAmountsCents())} / mo
         </div>
 
         <div className='current-amount my-2'>
-          Current amount: {centsToDollaString(App.sumCurrentAmountsCents())}
+          Current amount: {centsToDollaString(App.sumCurrentAmountsCents())} / mo
         </div>
 
         {this.renderContent()}

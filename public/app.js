@@ -469,13 +469,15 @@ var AppsView = function (_React$Component) {
           'div',
           { className: 'starting-amount my-2' },
           'Starting amount: ',
-          (0, _util.centsToDollaString)(_app2.default.sumStartingAmountsCents())
+          (0, _util.centsToDollaString)(_app2.default.sumStartingAmountsCents()),
+          ' / mo'
         ),
         _react2.default.createElement(
           'div',
           { className: 'current-amount my-2' },
           'Current amount: ',
-          (0, _util.centsToDollaString)(_app2.default.sumCurrentAmountsCents())
+          (0, _util.centsToDollaString)(_app2.default.sumCurrentAmountsCents()),
+          ' / mo'
         ),
         this.renderContent()
       );
@@ -794,6 +796,16 @@ var App = function () {
       App.saveToLocalStorage();
     }
   }, {
+    key: 'monthlyCurrentAmount',
+    value: function monthlyCurrentAmount() {
+      return this.frequency === 'monthly' ? this.current_amount_cents : Math.round(this.current_amount_cents / 12);
+    }
+  }, {
+    key: 'monthlyStartingAmount',
+    value: function monthlyStartingAmount() {
+      return this.frequency === 'monthly' ? this.starting_amount_cents : Math.round(this.starting_amount_cents / 12);
+    }
+  }, {
     key: 'setSelected',
     value: function setSelected(val) {
       this.selected = val;
@@ -904,14 +916,14 @@ var App = function () {
     key: 'sumStartingAmountsCents',
     value: function sumStartingAmountsCents() {
       return (0, _sumBy2.default)(this.getSelected(), function (app) {
-        return app.starting_amount_cents || 0;
+        return app.monthlyStartingAmount() || 0;
       });
     }
   }, {
     key: 'sumCurrentAmountsCents',
     value: function sumCurrentAmountsCents() {
       return (0, _sumBy2.default)(this.getSelected(), function (app) {
-        return app.current_amount_cents || 0;
+        return app.monthlyCurrentAmount() || 0;
       });
     }
   }, {

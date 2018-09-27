@@ -31,6 +31,14 @@ class App {
     App.saveToLocalStorage()
   }
 
+  monthlyCurrentAmount() {
+    return this.frequency === 'monthly' ? this.current_amount_cents : Math.round(this.current_amount_cents / 12)
+  }
+
+  monthlyStartingAmount() {
+    return this.frequency === 'monthly' ? this.starting_amount_cents : Math.round(this.starting_amount_cents / 12)
+  }
+
   setSelected(val) {
     this.selected = val
 
@@ -96,11 +104,11 @@ class App {
   }
 
   static sumStartingAmountsCents() {
-    return sumBy(this.getSelected(), app => app.starting_amount_cents || 0)
+    return sumBy(this.getSelected(), app => app.monthlyStartingAmount() || 0)
   }
 
   static sumCurrentAmountsCents() {
-    return sumBy(this.getSelected(), app => app.current_amount_cents || 0)
+    return sumBy(this.getSelected(), app => app.monthlyCurrentAmount() || 0)
   }
 
   static saveToLocalStorage(json) {
