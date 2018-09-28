@@ -81,16 +81,6 @@
       "terse": "awsamazon",
       "frequency": "monthly",
       "site": "https://aws.amazon.com/"
-    },
-    {
-      "name": "VPS",
-      "frequency": "monthly"
-    },
-    {
-      "name": "Email Service"
-    },
-    {
-      "name": "Dating app"
     }
   ]
 }

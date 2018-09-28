@@ -165,6 +165,14 @@ var _bindAll = require('lodash/bindAll');
 
 var _bindAll2 = _interopRequireDefault(_bindAll);
 
+var _reject = require('lodash/reject');
+
+var _reject2 = _interopRequireDefault(_reject);
+
+var _clone = require('lodash/clone');
+
+var _clone2 = _interopRequireDefault(_clone);
+
 var _classnames = require('classnames');
 
 var _classnames2 = _interopRequireDefault(_classnames);
@@ -203,72 +211,18 @@ var AppsView = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (AppsView.__proto__ || Object.getPrototypeOf(AppsView)).call(this, props));
 
-    (0, _bindAll2.default)(_this, ['onInput', 'findMatches', 'switchTab', 'renderItem', 'renderSelected', 'clickCheck', 'render', 'clickAddSubscription', 'onHideModal', 'handleAmountModeChange']);
+    (0, _bindAll2.default)(_this, ['renderItem', 'renderSelected', 'clickCheck', 'render', 'handleAmountModeChange', 'clickEdit', 'clickAddSubscription', 'onSubmitModal']);
+
+    _this.modalRef = _react2.default.createRef();
 
     _this.state = {
       apps: _app2.default.allToJSON(),
-      activeTab: '1',
       amountMode: 'starting'
     };
     return _this;
   }
 
   _createClass(AppsView, [{
-    key: 'onInput',
-    value: function onInput(e) {
-      var val = e.currentTarget.value;
-
-      var matches = this.findMatches(val);
-
-      this.setState({
-        apps: matches
-      });
-    }
-  }, {
-    key: 'searchMatches',
-    value: function searchMatches(query) {
-      var matches = [];
-
-      window.apps.some(function (a) {
-        if (query.test(a.terse)) {
-          matches.push(a);
-        }
-
-        return matches.length >= 20;
-      });
-
-      return matches;
-    }
-  }, {
-    key: 'findFromQuery',
-    value: function findFromQuery(query) {
-      query = new RegExp(query.replace(/\s|\(|\)/, ''), "i");
-
-      return this.searchMatches(query);
-    }
-  }, {
-    key: 'findFromStart',
-    value: function findFromStart(query) {
-      query = new RegExp('^' + query.replace(/\s|\(|\)/, ''), "i");
-
-      return this.searchMatches(query);
-    }
-  }, {
-    key: 'findMatches',
-    value: function findMatches(query) {
-      var matches = [];
-
-      if (query.length > 2) {
-        matches = this.findFromStart(query);
-      }
-
-      if (!matches.length) {
-        matches = this.findFromQuery(query);
-      }
-
-      return matches;
-    }
-  }, {
     key: 'save',
     value: function save() {
       localStorage.setItem('addresses', JSON.stringify(json || this.getAll()));
@@ -278,9 +232,7 @@ var AppsView = function (_React$Component) {
     value: function clickAddSubscription(e) {
       e.preventDefault();
 
-      this.setState({
-        editingApp: {}
-      });
+      this.modalRef.current.openWith(_app2.default.blankApp());
     }
   }, {
     key: 'clickApp',
@@ -291,11 +243,6 @@ var AppsView = function (_React$Component) {
         _app2.default.saveToLocalStorage();
         this.resetAppsState();
       }
-    }
-  }, {
-    key: 'switchTab',
-    value: function switchTab(tab) {
-      this.setState({ activeTab: tab });
     }
   }, {
     key: 'resetAppsState',
@@ -317,14 +264,35 @@ var AppsView = function (_React$Component) {
   }, {
     key: 'amountInputted',
     value: function amountInputted(e, app) {
-      app.amount_cents = (0, _util.dollarStringToCents)(e.currentTarget.value);
+      var attr = this.state.amountMode + '_amount_cents';
+      var val = e.currentTarget.value;
+      var amount = (0, _util.dollarStringToCents)(val);
 
+      if (amount < 0) amount = 0;
+
+      app[this.state.amountMode + '_amount_cents_value'] = val;
+      app[attr] = amount;
+
+      this.resetAppsState();
+    }
+  }, {
+    key: 'amountBlurred',
+    value: function amountBlurred(e, app) {
+      var val = e.currentTarget.value;
+
+      if (val) {
+        val = (0, _util.centsToDollaString)((0, _util.dollarStringToCents)(val)).replace('$', '');
+      }
+
+      app[this.state.amountMode + '_amount_cents_value'] = val;
       this.resetAppsState();
     }
   }, {
     key: 'renderSelected',
     value: function renderSelected(app) {
       var _this2 = this;
+
+      var amount = app[this.state.amountMode + '_amount_cents_value'] || '';
 
       return _react2.default.createElement(
         'div',
@@ -337,17 +305,19 @@ var AppsView = function (_React$Component) {
             null,
             '$'
           ),
-          _react2.default.createElement('input', { type: 'number', className: 'money-box', placeholder: '0.00', onInput: function onInput(e) {
+          _react2.default.createElement('input', { value: amount, type: 'number', className: 'money-box', placeholder: '0.00', onChange: function onChange(e) {
               return _this2.amountInputted(e, app);
+            }, onBlur: function onBlur(e) {
+              return _this2.amountBlurred(e, app);
             } }),
           _react2.default.createElement(
             'div',
             { className: 'per-what' },
             '/',
-            app.type == 'monthly' ? 'mo' : 'year'
+            app.frequency == 'monthly' ? 'mo' : 'yr'
           )
         ),
-        this.state.activeTab === '1' && _react2.default.createElement('img', { onClick: function onClick(e) {
+        _react2.default.createElement('img', { onClick: function onClick(e) {
             return _this2.clickCheck(e, app);
           }, className: 'check mx-2', style: { width: 20 }, src: '/check.svg' })
       );
@@ -358,6 +328,27 @@ var AppsView = function (_React$Component) {
       this.setState({
         amountMode: this.state.amountMode === 'starting' ? 'current' : 'starting'
       });
+    }
+  }, {
+    key: 'clickTrash',
+    value: function clickTrash(e, app) {
+      e.stopPropagation();
+
+      if (app.current_amount_cents || app.starting_amount_cents) {
+        if (!confirm("Are you sure?")) {
+          return;
+        }
+      }
+
+      _app2.default.remove(app);
+      this.resetAppsState();
+    }
+  }, {
+    key: 'clickEdit',
+    value: function clickEdit(e, app) {
+      e.stopPropagation();
+
+      this.modalRef.current.openWith(_app2.default.clonedApp(app), app.uuid);
     }
   }, {
     key: 'renderItem',
@@ -384,117 +375,91 @@ var AppsView = function (_React$Component) {
             null,
             _react2.default.createElement(
               'a',
-              { className: 'site', href: app.site, target: '_blank' },
+              { tabIndex: '-1', className: 'site', href: app.site, target: '_blank' },
               app.site
             )
           )
         ),
-        app.selected ? this.renderSelected(app) : null
+        app.selected ? this.renderSelected(app) : _react2.default.createElement(
+          'div',
+          { className: 'center-center' },
+          _react2.default.createElement('img', { onClick: function onClick(e) {
+              return _this3.clickEdit(e, app);
+            }, className: 'check mx-2', style: { width: 20 }, src: '/pencil.svg' }),
+          _react2.default.createElement('img', { onClick: function onClick(e) {
+              return _this3.clickTrash(e, app);
+            }, className: 'check mx-2', style: { width: 20 }, src: '/trash-empty.svg' })
+        )
       );
     }
   }, {
-    key: 'renderTabContent',
-    value: function renderTabContent() {
+    key: 'renderContent',
+    value: function renderContent() {
+      var _React$createElement;
+
       var mode = this.state.amountMode;
-      var txt = mode === 'starting' ? 'Showing starting amounts' : 'Showing current amounts';
+      var txt = mode === 'starting' ? 'Starting amounts' : 'Current amounts';
 
-      if (this.state.activeTab === '1') {
-        var _React$createElement;
+      var apps = _app2.default.getAll();
 
-        return _react2.default.createElement(
+      return _react2.default.createElement(
+        'div',
+        null,
+        _react2.default.createElement(
           'div',
-          null,
+          { className: 'center-between mt-1' },
           _react2.default.createElement(
-            'div',
-            { className: 'center mt-2' },
-            _react2.default.createElement('input', { onInput: this.onInput, style: { width: '90%', height: 40 }, className: 'form-control mb-2', placeholder: 'Search subscriptions' })
+            _reactstrap.Button,
+            { className: 'ml-3', size: 'sm', onClick: this.clickAddSubscription, outline: true, color: 'primary' },
+            'Add Subscription'
           ),
+          ' ',
           _react2.default.createElement(
             'div',
-            { className: 'center-between mt-1' },
+            { className: 'center' },
+            _react2.default.createElement(_reactToggle2.default, {
+              id: 'amount-mode',
+              defaultChecked: this.state.amountMode == 'starting',
+              icons: false,
+              onChange: this.handleAmountModeChange }),
             _react2.default.createElement(
-              _reactstrap.Button,
-              { onClick: this.clickAddSubscription, outline: true, color: 'primary' },
-              'Add Subscription'
-            ),
-            ' ',
-            _react2.default.createElement(
-              'div',
-              { className: 'center' },
-              _react2.default.createElement(_reactToggle2.default, {
-                id: 'amount-mode',
-                defaultChecked: this.state.amountMode == 'starting',
-                icons: false,
-                onChange: this.handleAmountModeChange }),
-              _react2.default.createElement(
-                'span',
-                { className: 'ml-1', id: 'amount-mode' },
-                txt
-              )
-            )
-          ),
-          _react2.default.createElement(
-            'div',
-            { className: 'center mt-1' },
-            _react2.default.createElement(
-              'div',
-              (_React$createElement = { className: 'list-group' }, _defineProperty(_React$createElement, 'className', 'mt-1'), _defineProperty(_React$createElement, 'style', { width: 400 }), _React$createElement),
-              _app2.default.getAll().map(this.renderItem)
+              'span',
+              { className: 'ml-1', id: 'amount-mode' },
+              txt
             )
           )
-        );
-      } else {
-        var _React$createElement2;
-
-        var apps = _app2.default.getAll().filter(function (a) {
-          return a.selected;
-        });
-
-        return _react2.default.createElement(
+        ),
+        _react2.default.createElement(
           'div',
-          null,
+          { className: 'center mt-1' },
           _react2.default.createElement(
             'div',
-            { className: 'center mt-1' },
-            _react2.default.createElement(
-              _reactstrap.Button,
-              { onClick: this.clickAddSubscription, outline: true, color: 'primary' },
-              'Add Subscription'
-            ),
-            ' '
-          ),
-          _react2.default.createElement(
-            'div',
-            { className: 'center mt-1' },
-            _react2.default.createElement(
-              'div',
-              (_React$createElement2 = { className: 'list-group' }, _defineProperty(_React$createElement2, 'className', 'mt-1'), _defineProperty(_React$createElement2, 'style', { width: 400 }), _React$createElement2),
-              apps.map(this.renderItem)
-            )
+            (_React$createElement = { className: 'list-group' }, _defineProperty(_React$createElement, 'className', 'mt-1'), _defineProperty(_React$createElement, 'style', { width: 400 }), _React$createElement),
+            apps.map(this.renderItem)
           )
-        );
-      }
+        )
+      );
     }
   }, {
-    key: 'onHideModal',
-    value: function onHideModal() {
-      this.setState({
-        editingApp: null
-      });
+    key: 'onSubmitModal',
+    value: function onSubmitModal(data, uuid) {
+      if (uuid) {
+        var app = _app2.default.find(uuid);
+        Object.assign(app, data);
+      } else {
+        _app2.default.addApp(data);
+      }
+
+      this.modalRef.current.toggle();
+      this.resetAppsState();
     }
   }, {
     key: 'render',
     value: function render() {
-      var _this4 = this;
-
-      var your_apps = _app2.default.getAll().filter(function (a) {
-        return a.selected;
-      });
-
       return _react2.default.createElement(
         'div',
         { className: 'container', id: 'content' },
-        _react2.default.createElement(_subscription_modal2.default, { editingApp: this.state.editingApp, onHideModal: this.onHideModal }),
+        _react2.default.createElement(_subscription_modal2.default, { ref: this.modalRef, onSubmitModal: this.onSubmitModal }),
         _react2.default.createElement(
           'h5',
           { className: 'lets-kill' },
@@ -504,48 +469,17 @@ var AppsView = function (_React$Component) {
           'div',
           { className: 'starting-amount my-2' },
           'Starting amount: ',
-          (0, _util.centsToDollaString)(_app2.default.sumAmountsCents())
+          (0, _util.centsToDollaString)(_app2.default.sumStartingAmountsCents()),
+          ' / mo'
         ),
         _react2.default.createElement(
           'div',
           { className: 'current-amount my-2' },
-          'Current amount: $0'
+          'Current amount: ',
+          (0, _util.centsToDollaString)(_app2.default.sumCurrentAmountsCents()),
+          ' / mo'
         ),
-        _react2.default.createElement(
-          _reactstrap.Nav,
-          { tabs: true },
-          _react2.default.createElement(
-            _reactstrap.NavItem,
-            null,
-            _react2.default.createElement(
-              _reactstrap.NavLink,
-              {
-                className: (0, _classnames2.default)({ active: this.state.activeTab === '1' }),
-                onClick: function onClick() {
-                  _this4.switchTab('1');
-                }
-              },
-              'Subscriptions'
-            )
-          ),
-          _react2.default.createElement(
-            _reactstrap.NavItem,
-            null,
-            _react2.default.createElement(
-              _reactstrap.NavLink,
-              {
-                className: (0, _classnames2.default)({ active: this.state.activeTab === '2' }),
-                onClick: function onClick() {
-                  _this4.switchTab('2');
-                }
-              },
-              'Your Subscriptions (',
-              your_apps.length,
-              ')'
-            )
-          )
-        ),
-        this.renderTabContent()
+        this.renderContent()
       );
     }
   }]);
@@ -631,6 +565,14 @@ var _bindAll = require('lodash/bindAll');
 
 var _bindAll2 = _interopRequireDefault(_bindAll);
 
+var _app = require('../models/app');
+
+var _app2 = _interopRequireDefault(_app);
+
+var _formSerialize = require('form-serialize');
+
+var _formSerialize2 = _interopRequireDefault(_formSerialize);
+
 var _reactstrap = require('reactstrap');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -650,10 +592,11 @@ var SubscriptionModal = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, (SubscriptionModal.__proto__ || Object.getPrototypeOf(SubscriptionModal)).call(this, props));
 
     _this.state = {
-      modal: false
+      modal: false,
+      app: _app2.default.blankApp()
     };
 
-    (0, _bindAll2.default)(_this, ['onSubmit']);
+    (0, _bindAll2.default)(_this, ['onSubmit', 'toggle', 'openWith', 'onInput']);
     return _this;
   }
 
@@ -661,13 +604,42 @@ var SubscriptionModal = function (_React$Component) {
     key: 'onSubmit',
     value: function onSubmit(e) {
       e.preventDefault();
+
+      this.props.onSubmitModal(this.state.app, this.state.uuid);
+    }
+  }, {
+    key: 'toggle',
+    value: function toggle() {
+      this.setState({
+        modal: !this.state.modal
+      });
+    }
+  }, {
+    key: 'openWith',
+    value: function openWith(app, uuid) {
+      this.setState({
+        modal: true,
+        uuid: uuid,
+        app: app
+      });
+
+      this.toggle();
+    }
+  }, {
+    key: 'onInput',
+    value: function onInput(e) {
+      var val = e.currentTarget.value;
+      var name = e.currentTarget.getAttribute('name');
+
+      this.state.app[name] = val;
+      this.setState(this.state);
     }
   }, {
     key: 'render',
     value: function render() {
       return _react2.default.createElement(
         _reactstrap.Modal,
-        { isOpen: !!this.props.editingApp, className: this.props.className },
+        { toggle: this.toggle, isOpen: this.state.modal, className: this.props.className },
         _react2.default.createElement(
           _reactstrap.ModalHeader,
           null,
@@ -681,16 +653,11 @@ var SubscriptionModal = function (_React$Component) {
             { onSubmit: this.onSubmit },
             _react2.default.createElement(
               _reactstrap.FormGroup,
-              null,
-              _react2.default.createElement(_reactstrap.Input, { placeholder: 'subscription name' })
-            ),
-            _react2.default.createElement(
-              _reactstrap.FormGroup,
               { className: 'd-flex' },
-              _react2.default.createElement(_reactstrap.Input, { className: 'mr-2', name: 'select', type: 'number', placeholder: '0.00', style: { width: 90 } }),
+              _react2.default.createElement(_reactstrap.Input, { name: 'name', placeholder: 'subscription name', value: this.state.app.name, onChange: this.onInput }),
               _react2.default.createElement(
                 _reactstrap.Input,
-                { type: 'select', name: 'frequency', className: 'ml-2' },
+                { type: 'select', name: 'frequency', className: 'ml-2', value: this.state.app.frequency, onChange: this.onInput, style: { width: 100 } },
                 _react2.default.createElement(
                   'option',
                   null,
@@ -711,20 +678,20 @@ var SubscriptionModal = function (_React$Component) {
                 null,
                 'Website'
               ),
-              _react2.default.createElement(_reactstrap.Input, { placeholder: 'https://blah.com' })
+              _react2.default.createElement(_reactstrap.Input, { placeholder: 'https://blah.com', name: 'website', value: this.state.app.website, onChange: this.onInput })
             ),
             _react2.default.createElement(
               'div',
               { className: 'center-between mt-3' },
               _react2.default.createElement(
                 _reactstrap.Button,
-                { color: 'secondary', onClick: this.props.onHideModal },
+                { color: 'secondary', onClick: this.toggle },
                 'Cancel'
               ),
               _react2.default.createElement(
                 _reactstrap.Button,
                 { color: 'primary' },
-                'Add'
+                this.state.uuid ? 'Update' : 'Add'
               ),
               ' '
             )
@@ -797,7 +764,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var json_attrs = ['uuid', 'name', 'selected', 'amount', 'frequency', 'site'];
+var json_attrs = ['uuid', 'name', 'selected', 'starting_amount_cents', 'current_amount_cents', 'frequency', 'site'];
 
 var App = function () {
   function App(attrs) {
@@ -806,6 +773,9 @@ var App = function () {
     for (var prop in attrs) {
       this[prop] = attrs[prop];
     }
+
+    this.starting_amount_cents_value = attrs.starting_amount_cents ? (0, _util.centsToDollaString)(attrs.starting_amount_cents).replace('$', '') : '';
+    this.current_amount_cents_value = attrs.current_amount_cents ? (0, _util.centsToDollaString)(attrs.current_amount_cents).replace('$', '') : '';
 
     if (!this.uuid) {
       this.uuid = (0, _util.genUUID)(attrs.name);
@@ -824,6 +794,16 @@ var App = function () {
       this.terse = this.tersify(name);
 
       App.saveToLocalStorage();
+    }
+  }, {
+    key: 'monthlyCurrentAmount',
+    value: function monthlyCurrentAmount() {
+      return this.frequency === 'monthly' ? this.current_amount_cents : Math.round(this.current_amount_cents / 12);
+    }
+  }, {
+    key: 'monthlyStartingAmount',
+    value: function monthlyStartingAmount() {
+      return this.frequency === 'monthly' ? this.starting_amount_cents : Math.round(this.starting_amount_cents / 12);
     }
   }, {
     key: 'setSelected',
@@ -879,6 +859,53 @@ var App = function () {
       return this.apps;
     }
   }, {
+    key: 'getSelected',
+    value: function getSelected() {
+      return App.getAll().filter(function (a) {
+        return a.selected;
+      });
+    }
+  }, {
+    key: 'blankApp',
+    value: function blankApp() {
+      return {
+        name: '',
+        amount: '',
+        website: '',
+        frequency: 'monthly'
+      };
+    }
+  }, {
+    key: 'clonedApp',
+    value: function clonedApp(app) {
+      app = Object.assign(App.blankApp(), app.toJSON());
+      delete app.uuid;
+
+      return app;
+    }
+  }, {
+    key: 'find',
+    value: function find(uuid) {
+      return App.getAll().find(function (a) {
+        return a.uuid === uuid;
+      });
+    }
+  }, {
+    key: 'remove',
+    value: function remove(app) {
+      this.apps = this.getAll().filter(function (a) {
+        return a.uuid != app.uuid;
+      });
+      App.saveToLocalStorage();
+    }
+  }, {
+    key: 'addApp',
+    value: function addApp(data) {
+      var app = new App(data);
+      App.getAll().push(app);
+      App.saveToLocalStorage();
+    }
+  }, {
     key: 'allToJSON',
     value: function allToJSON() {
       return (0, _map2.default)(this.getAll(), function (a) {
@@ -886,10 +913,17 @@ var App = function () {
       });
     }
   }, {
-    key: 'sumAmountsCents',
-    value: function sumAmountsCents() {
-      return (0, _sumBy2.default)(this.getAll(), function (app) {
-        return app.amount_cents || 0;
+    key: 'sumStartingAmountsCents',
+    value: function sumStartingAmountsCents() {
+      return (0, _sumBy2.default)(this.getSelected(), function (app) {
+        return app.monthlyStartingAmount() || 0;
+      });
+    }
+  }, {
+    key: 'sumCurrentAmountsCents',
+    value: function sumCurrentAmountsCents() {
+      return (0, _sumBy2.default)(this.getSelected(), function (app) {
+        return app.monthlyCurrentAmount() || 0;
       });
     }
   }, {
@@ -911,7 +945,7 @@ require.register("util.js", function(exports, require, module) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.centsToDollaString = exports.dollarStringToCents = exports.genUUID = undefined;
+exports.formToJSON = exports.centsToDollaString = exports.dollarStringToCents = exports.genUUID = undefined;
 
 var _v = require('uuid/v5');
 
@@ -945,6 +979,19 @@ var centsToDollaString = exports.centsToDollaString = function centsToDollaStrin
   }
   var str = dollars.replace(/(\d{3})(?=\d)/g, '$1,').replace(/^0*(?=.)/, '');
   return (dollar_sign ? '$' : '') + str + '.' + decimal;
+};
+
+var formToJSON = exports.formToJSON = function formToJSON(form) {
+  var json = {};
+  var fields = form.querySelectorAll('input, textarea, select');
+
+  for (var i = 0; i < fields.length; i++) {
+    var field = fields[i];
+
+    json[field.getAttribute('name')] = field.value;
+  }
+
+  return json;
 };
 });
 

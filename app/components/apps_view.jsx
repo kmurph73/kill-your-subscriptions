@@ -1,5 +1,6 @@
 import React from 'react';
 import bindAll from 'lodash/bindAll';
+import clone from 'lodash/clone';
 import classnames from 'classnames';
 
 import { dollarStringToCents, centsToDollaString } from '../util.js';
@@ -14,63 +15,14 @@ export default class AppsView extends React.Component {
   constructor(props) {
     super(props);
 
-    bindAll(this, ['onInput', 'findMatches', 'switchTab', 'renderItem', 'renderSelected', 'clickCheck', 'render', 'clickAddSubscription', 'onHideModal', 'handleAmountModeChange'])
+    bindAll(this, ['renderItem', 'renderSelected', 'clickCheck', 'render', 'handleAmountModeChange', 'clickEdit', 'clickAddSubscription', 'onSubmitModal'])
+
+    this.modalRef = React.createRef()
 
     this.state = {
       apps: App.allToJSON(),
-      activeTab: '1',
       amountMode: 'starting'
     }
-  }
-
-  onInput(e) {
-    let val = e.currentTarget.value;
-
-    let matches = this.findMatches(val);
-
-    this.setState({
-      apps: matches
-    })
-  }
-
-  searchMatches(query) {
-    let matches = [];
-
-    window.apps.some((a) => {
-      if (query.test(a.terse)) {
-        matches.push(a)
-      }
-
-      return matches.length >= 20;
-    })
-
-    return matches
-  }
-
-  findFromQuery(query) {
-    query = new RegExp(query.replace(/\s|\(|\)/, ''), "i")
-
-    return this.searchMatches(query)
-  }
-
-  findFromStart(query) {
-    query = new RegExp('^' + query.replace(/\s|\(|\)/, ''), "i")
-
-    return this.searchMatches(query)
-  }
-
-  findMatches(query) {
-    let matches = [];
-
-    if (query.length > 2) {
-      matches = this.findFromStart(query)
-    }
-
-    if (!matches.length) {
-      matches = this.findFromQuery(query)
-    }
-
-    return matches;
   }
 
   save() {
@@ -80,9 +32,7 @@ export default class AppsView extends React.Component {
   clickAddSubscription(e) {
     e.preventDefault()
 
-    this.setState({
-      editingApp: {}
-    })
+    this.modalRef.current.openWith(App.blankApp());
   }
 
   clickApp(app) {
@@ -92,10 +42,6 @@ export default class AppsView extends React.Component {
       App.saveToLocalStorage()
       this.resetAppsState()
     }
-  }
-
-  switchTab(tab) {
-    this.setState({ activeTab: tab })
   }
 
   resetAppsState() {
@@ -114,23 +60,41 @@ export default class AppsView extends React.Component {
   }
 
   amountInputted(e, app) {
-    app.amount_cents = dollarStringToCents(e.currentTarget.value)
+    let attr = `${this.state.amountMode}_amount_cents`;
+    let val = e.currentTarget.value;
+    let amount = dollarStringToCents(val);
+
+    if (amount < 0) amount = 0
+
+    app[`${this.state.amountMode}_amount_cents_value`] = val
+    app[attr] = amount
 
     this.resetAppsState()
   }
 
+  amountBlurred(e, app) {
+    let val = e.currentTarget.value;
+
+    if (val) {
+      val = centsToDollaString(dollarStringToCents(val)).replace('$', '')
+    }
+
+    app[`${this.state.amountMode}_amount_cents_value`] = val
+    this.resetAppsState()
+  }
+
   renderSelected(app) {
+    let amount = app[`${this.state.amountMode}_amount_cents_value`] || ''
+
     return (
       <div className="center-between" key={app.uuid}>
         <div className="center money-div mr-2">
           <div>$</div>
-          <input type="number" className='money-box' placeholder='0.00' onInput={e => this.amountInputted(e, app)} />
-          <div className='per-what'>/{app.type == 'monthly' ? 'mo' : 'year'}</div>
+          <input value={amount} type="number" className='money-box' placeholder='0.00' onChange={e => this.amountInputted(e, app)} onBlur={e => this.amountBlurred(e, app)} />
+          <div className='per-what'>/{app.frequency == 'monthly' ? 'mo' : 'yr'}</div>
         </div>
 
-        {this.state.activeTab === '1' &&
-          <img onClick={e => this.clickCheck(e, app)} className="check mx-2" style={{width: 20}} src='/check.svg' />
-        }
+        <img onClick={e => this.clickCheck(e, app)} className="check mx-2" style={{width: 20}} src='/check.svg' />
       </div>
     )
   }
@@ -139,6 +103,26 @@ export default class AppsView extends React.Component {
     this.setState({
       amountMode: this.state.amountMode === 'starting' ? 'current' : 'starting'
     })
+  }
+
+  clickTrash(e, app) {
+    e.stopPropagation()
+
+    if (app.current_amount_cents || app.starting_amount_cents) {
+      if (!confirm("Are you sure?")) {
+        return;
+      }
+
+    }
+
+    App.remove(app)
+    this.resetAppsState()
+  }
+
+  clickEdit(e, app) {
+    e.stopPropagation()
+
+    this.modalRef.current.openWith(app.clone(), app.uuid)
   }
 
   renderItem(app) {
@@ -150,109 +134,78 @@ export default class AppsView extends React.Component {
           <div>{app.name}</div>
           {app.selected &&
             <div>
-              <a className='site' href={app.site} target='_blank'>{app.site}</a>
+              <a tabIndex='-1' className='site' href={app.site} target='_blank'>{app.site}</a>
             </div>
           }
         </div>
 
-        {app.selected ? this.renderSelected(app) : null}
+        {app.selected ? this.renderSelected(app) : (
+          <div className='center-center'>
+            <img onClick={e => this.clickEdit(e, app)} className="check mx-2" style={{width: 20}} src='/pencil.svg' />
+            <img onClick={e => this.clickTrash(e, app)} className="check mx-2" style={{width: 20}} src='/trash-empty.svg' />
+          </div>
+        )}
       </div>
     )
   }
 
-  renderTabContent() {
+  renderContent() {
     let mode = this.state.amountMode;
-    let txt = mode === 'starting' ? 'Showing starting amounts' : 'Showing current amounts';
+    let txt = mode === 'starting' ? 'Starting amounts' : 'Current amounts';
 
-    if (this.state.activeTab === '1') {
-      return (
-        <div>
-          <div className="center mt-2">
-            <input onInput={this.onInput} style={{width: '90%', height: 40}} className='form-control mb-2' placeholder="Search subscriptions" />
-          </div>
+    let apps = App.getAll()
 
-          <div className="center-between mt-1">
-            <Button onClick={this.clickAddSubscription} outline color="primary">Add Subscription</Button>{' '}
-            <div className="center">
-              <Toggle
-                id='amount-mode'
-                defaultChecked={this.state.amountMode == 'starting'}
-                icons={false}
-                onChange={this.handleAmountModeChange} />
-              <span className="ml-1" id='amount-mode'>{txt}</span>
-            </div>
-          </div>
-
-          <div className="center mt-1">
-            <div className="list-group" className='mt-1' style={{width: 400}}>
-              {App.getAll().map(this.renderItem)}
-            </div>
+    return (
+      <div>
+        <div className="center-between mt-1">
+          <Button className="ml-3" size="sm" onClick={this.clickAddSubscription} outline color="primary">Add Subscription</Button>{' '}
+          <div className="center">
+            <Toggle
+              id='amount-mode'
+              defaultChecked={this.state.amountMode == 'starting'}
+              icons={false}
+              onChange={this.handleAmountModeChange} />
+            <span className="ml-1" id='amount-mode'>{txt}</span>
           </div>
         </div>
-      )
-    } else {
-      let apps = App.getAll().filter(a => a.selected);
 
-      return (
-        <div>
-          <div className="center mt-1">
-            <Button onClick={this.clickAddSubscription} outline color="primary">Add Subscription</Button>{' '}
-          </div>
-
-          <div className="center mt-1">
-            <div className="list-group" className='mt-1' style={{width: 400}}>
-              {apps.map(this.renderItem)}
-            </div>
+        <div className="center mt-1">
+          <div className="list-group" className='mt-1' style={{width: 400}}>
+            {apps.map(this.renderItem)}
           </div>
         </div>
-      )
-    }
+      </div>
+    )
   }
 
-  onHideModal() {
-    this.setState({
-      editingApp: null
-    })
+  onSubmitModal(data, uuid) {
+    if (uuid) {
+      let app = App.find(uuid);
+      Object.assign(app, data)
+    } else {
+      App.addApp(data);
+    }
+
+    this.modalRef.current.toggle()
+    this.resetAppsState()
   }
 
   render() {
-    let your_apps = App.getAll().filter(a => a.selected)
-
     return (
       <div className='container' id="content">
-        <SubscriptionModal editingApp={this.state.editingApp} onHideModal={this.onHideModal} />
+        <SubscriptionModal ref={this.modalRef} onSubmitModal={this.onSubmitModal} />
 
         <h5 className='lets-kill'>Let's kill your subscriptions.</h5>
 
         <div className='starting-amount my-2'>
-          Starting amount: {centsToDollaString(App.sumAmountsCents())}
+          Starting amount: {centsToDollaString(App.sumStartingAmountsCents())} / mo
         </div>
 
         <div className='current-amount my-2'>
-          Current amount: $0
+          Current amount: {centsToDollaString(App.sumCurrentAmountsCents())} / mo
         </div>
 
-        <Nav tabs>
-          <NavItem>
-            <NavLink
-              className={classnames({ active: this.state.activeTab === '1' })}
-              onClick={() => { this.switchTab('1'); }}
-            >
-              Subscriptions
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink
-              className={classnames({ active: this.state.activeTab === '2' })}
-              onClick={() => { this.switchTab('2'); }}
-            >
-              Your Subscriptions ({your_apps.length})
-            </NavLink>
-          </NavItem>
-        </Nav>
-
-        {this.renderTabContent()}
-
+        {this.renderContent()}
       </div>
     );
   }
