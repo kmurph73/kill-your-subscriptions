@@ -1,7 +1,6 @@
 import React from 'react';
 import bindAll from 'lodash/bindAll';
 import App from '../models/app';
-import serialize from 'form-serialize';
 import { FormGroup, Label, Form, Input, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 class SubscriptionModal extends React.Component {

@@ -25,16 +25,3 @@ export const centsToDollaString = function(x, dollar_sign) {
   const str = dollars.replace(/(\d{3})(?=\d)/g, '$1,').replace(/^0*(?=.)/, '');
   return (dollar_sign ? '$' : '') + str + '.' + decimal;
 }
-
-export const formToJSON = function(form) {
-  let json = {};
-  let fields = form.querySelectorAll('input, textarea, select');
-
-  for(let i = 0; i < fields.length; i++) {
-    let field = fields[i];
-
-    json[field.getAttribute('name')] = field.value;
-  }
-
-  return json;
-}

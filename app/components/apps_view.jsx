@@ -1,6 +1,5 @@
 import React from 'react';
 import bindAll from 'lodash/bindAll';
-import reject from 'lodash/reject';
 import clone from 'lodash/clone';
 import classnames from 'classnames';
 
@@ -123,7 +122,7 @@ export default class AppsView extends React.Component {
   clickEdit(e, app) {
     e.stopPropagation()
 
-    this.modalRef.current.openWith(App.clonedApp(app), app.uuid)
+    this.modalRef.current.openWith(app.clone(), app.uuid)
   }
 
   renderItem(app) {

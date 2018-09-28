@@ -45,6 +45,13 @@ class App {
     App.saveToLocalStorage()
   }
 
+  clone() {
+    let app = Object.assign(App.blankApp(), this.toJSON())
+    delete app.uuid
+
+    return app;
+  }
+
   static getAll() {
     if (this.apps) { return this.apps; }
 
@@ -75,13 +82,6 @@ class App {
       website: '',
       frequency: 'monthly'
     }
-  }
-
-  static clonedApp(app) {
-    app = Object.assign(App.blankApp(), app.toJSON())
-    delete app.uuid
-
-    return app;
   }
 
   static find(uuid) {
