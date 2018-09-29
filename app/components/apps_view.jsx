@@ -160,14 +160,14 @@ export default class AppsView extends React.Component {
     return (
       <div>
         <div className="center-between mt-1">
-          <Button className="ml-3" size="sm" onClick={this.clickAddSubscription} outline color="primary">Add Subscription</Button>{' '}
+          <Button size="sm" onClick={this.clickAddSubscription} outline color="primary">Add Subscription</Button>{' '}
           <div className="center">
             <Toggle
               id='amount-mode'
               defaultChecked={this.state.amountMode == 'starting'}
               icons={false}
               onChange={this.handleAmountModeChange} />
-            <span className="ml-1" id='amount-mode'>{txt}</span>
+            <span className="ml-1" id='amount-mode' style={{width: 98}}>{txt}</span>
           </div>
         </div>
 
@@ -194,17 +194,23 @@ export default class AppsView extends React.Component {
 
   render() {
     return (
-      <div className='container' id="content" style={{maxWidth: 500}}>
+      <div className='container' id="content" style={{maxWidth: 400}}>
         <SubscriptionModal ref={this.modalRef} onSubmitModal={this.onSubmitModal} />
 
         <h5 className='lets-kill'>Let's kill your subscriptions.</h5>
 
-        <div className='starting-amount my-2'>
-          Starting amount: {centsToDollaString(App.sumStartingAmountsCents())} / mo
+        <div className='my-2'>
+          <span className='amount-label'>Starting amount:</span>
+          <span className='ml-2 amount'>
+            {centsToDollaString(App.sumStartingAmountsCents())} / mo
+          </span>
         </div>
 
-        <div className='current-amount my-2'>
-          Current amount: {centsToDollaString(App.sumCurrentAmountsCents())} / mo
+        <div className='my-2'>
+          <span className='amount-label'>Current amount:</span>
+          <span className='ml-2 amount'>
+            {centsToDollaString(App.sumCurrentAmountsCents())} / mo
+          </span>
         </div>
 
         {this.renderContent()}
