@@ -45,6 +45,8 @@ export default class AppsView extends React.Component {
   }
 
   resetAppsState() {
+    App.saveToLocalStorage()
+
     this.setState({
       apps: App.allToJSON()
     })
@@ -192,7 +194,7 @@ export default class AppsView extends React.Component {
 
   render() {
     return (
-      <div className='container' id="content">
+      <div className='container' id="content" style={{maxWidth: 500}}>
         <SubscriptionModal ref={this.modalRef} onSubmitModal={this.onSubmitModal} />
 
         <h5 className='lets-kill'>Let's kill your subscriptions.</h5>

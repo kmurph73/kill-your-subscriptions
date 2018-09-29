@@ -3,84 +3,84 @@
     {
       "name": "Netflix",
       "frequency": "monthly",
-      "site": "https://www.netflix.com/"
+      "website": "https://www.netflix.com/"
     },
     {
       "name": "JetBrains",
       "frequency": "yearly",
-      "site": "https://www.jetbrains.com/"
+      "website": "https://www.jetbrains.com/"
     },
     {
       "name": "GitHub",
       "frequency": "monthly",
-      "site": "https://github.com/"
+      "website": "https://github.com/"
     },
     {
       "name": "Digital Ocean",
       "frequency": "monthly",
-      "site": "https://www.digitalocean.com/"
+      "website": "https://www.digitalocean.com/"
     },
     {
       "name": "Amazon Prime",
       "frequency": "yearly",
-      "site": "https://www.amazon.com"
+      "website": "https://www.amazon.com"
     },
     {
       "name": "Amazon",
       "frequency": "monthly",
-      "site": "https://www.amazon.com"
+      "website": "https://www.amazon.com"
     },
     {
       "name": "PayPal",
       "frequency": "Monthly",
-      "site": "https://www.paypal.com"
+      "website": "https://www.paypal.com"
     },
     {
       "name": "Patreon",
       "frequency": "monthly",
-      "site": "https://www.patreon.com/"
+      "website": "https://www.patreon.com/"
     },
     {
       "name": "Hulu",
       "frequency": "monthly",
-      "site": "https://www.hulu.com/"
+      "website": "https://www.hulu.com/"
     },
     {
       "name": "YouTube",
       "frequency": "monthly",
-      "site": "https://www.hulu.com/"
+      "website": "https://www.hulu.com/"
     },
     {
       "name": "Audible",
       "frequency": "monthly",
-      "site": "https://www.audible.com/"
+      "website": "https://www.audible.com/"
     },
     {
       "name": "Apple Developer Account",
       "frequency": "yearly",
       "amount": "99",
-      "site": "https://developer.apple.com/"
+      "website": "https://developer.apple.com/"
     },
     {
       "name": "Namecheap",
       "frequency": "yearly",
-      "site": "https://www.namecheap.com/"
+      "website": "https://www.namecheap.com/"
     },
     {
       "name": "GoDaddy",
       "frequency": "yearly",
-      "site": "https://www.godaddy.com/"
+      "website": "https://www.godaddy.com/"
     },
     {
       "name": "Google Domains",
       "frequency": "yearly",
-      "site": "https://domains.google"
+      "website": "https://domains.google"
     },
     {
       "name": "AWS",
       "terse": "awsamazon",
       "frequency": "monthly",
-      "site": "https://aws.amazon.com/"
+      "website": "https://aws.amazon.com/"
     }
   ]
 }

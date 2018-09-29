@@ -2,7 +2,7 @@ import { genUUID } from '../util.js';
 import sumBy from 'lodash/sumBy';
 import map from 'lodash/map';
 
-const json_attrs = ['uuid', 'name', 'selected', 'starting_amount_cents', 'current_amount_cents', 'frequency', 'site']
+const json_attrs = ['uuid', 'name', 'selected', 'starting_amount_cents', 'current_amount_cents', 'frequency', 'website']
 
 import { centsToDollaString } from '../util.js';
 
