@@ -94,7 +94,7 @@ export default class AppsView extends React.Component {
           <div className='per-what'>/{app.frequency == 'monthly' ? 'mo' : 'yr'}</div>
         </div>
 
-        <img onClick={e => this.clickCheck(e, app)} className="check mx-2" style={{width: 20}} src='/check.svg' />
+        <img onClick={e => this.clickCheck(e, app)} className="check mx-2" style={{width: 20}} src='check.svg' />
       </div>
     )
   }
@@ -141,8 +141,8 @@ export default class AppsView extends React.Component {
 
         {app.selected ? this.renderSelected(app) : (
           <div className='center-center'>
-            <img onClick={e => this.clickEdit(e, app)} className="check mx-2" style={{width: 20}} src='/pencil.svg' />
-            <img onClick={e => this.clickTrash(e, app)} className="check mx-2" style={{width: 20}} src='/trash-empty.svg' />
+            <img onClick={e => this.clickEdit(e, app)} className="check mx-2" style={{width: 20}} src='pencil.svg' />
+            <img onClick={e => this.clickTrash(e, app)} className="check mx-2" style={{width: 20}} src='trash-empty.svg' />
           </div>
         )}
       </div>
