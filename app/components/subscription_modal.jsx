@@ -54,15 +54,15 @@ class SubscriptionModal extends React.Component {
             <FormGroup className='d-flex'>
               <Input name='name' placeholder="subscription name" value={this.state.app.name} onChange={this.onInput} />
 
-              <Input type="select" name="frequency" className='ml-2' value={this.state.app.frequency} onChange={this.onInput} style={{width: 100}} >
+            </FormGroup>
+
+            <FormGroup className="center">
+              <Input type="select" name="frequency"  value={this.state.app.frequency} onChange={this.onInput} style={{width: 100}} >
                 <option>monthly</option>
                 <option>yearly</option>
               </Input>
-            </FormGroup>
 
-            <FormGroup>
-              <Label>Website</Label>
-              <Input placeholder="https://blah.com" name='website' value={this.state.app.website} onChange={this.onInput} />
+              <Input placeholder="0.00" className="ml-2" type="number" name='amount' value={this.state.app.blah} onChange={this.onInput} />
             </FormGroup>
 
             <div className='center-between mt-3'>

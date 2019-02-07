@@ -90,11 +90,6 @@ export default class AppsView extends React.Component {
 
     return (
       <div className="center-between" key={app.uuid}>
-        <div className="center money-div mr-2">
-          <div>$</div>
-          <input value={amount} type="number" className='money-box' placeholder='0.00' onChange={e => this.amountInputted(e, app)} onBlur={e => this.amountBlurred(e, app)} />
-          <div className='per-what'>/{app.frequency == 'monthly' ? 'mo' : 'yr'}</div>
-        </div>
 
         <img onClick={e => this.clickCheck(e, app)} className="check mx-2" style={{width: 20}} src='check.svg' />
       </div>
@@ -128,25 +123,24 @@ export default class AppsView extends React.Component {
   }
 
   renderItem(app) {
-    let classes = classnames({selected: app.selected});
+    let amount = app[`${this.state.amountMode}_amount_cents_value`] || ''
 
     return (
-      <div className={"center-between app-item " + classes} onClick={() => this.clickApp(app)} key={app.uuid}>
+      <div className={"center-between app-item"} key={app.uuid}>
         <div>
           <div>{app.name}</div>
-          {app.selected &&
-            <div>
-              <a tabIndex='-1' className='site' href={app.site} target='_blank'>{app.site}</a>
-            </div>
-          }
         </div>
 
-        {app.selected ? this.renderSelected(app) : (
-          <div className='center-center'>
-            <img onClick={e => this.clickEdit(e, app)} className="check mx-2" style={{width: 20}} src='pencil.svg' />
-            <img onClick={e => this.clickTrash(e, app)} className="check mx-2" style={{width: 20}} src='trash-empty.svg' />
+        <div className='center'>
+          <div className="center money-div mr-2">
+            <div>$</div>
+            <input value={amount} type="number" className='money-box' placeholder='0.00' onChange={e => this.amountInputted(e, app)} onBlur={e => this.amountBlurred(e, app)} />
+            <div className='per-what'>/{app.frequency == 'monthly' ? 'mo' : 'yr'}</div>
           </div>
-        )}
+
+          <img onClick={e => this.clickEdit(e, app)} className="check mx-2" style={{width: 20}} src='pencil.svg' />
+          <img onClick={e => this.clickTrash(e, app)} className="check mx-2" style={{width: 20}} src='trash-empty.svg' />
+        </div>
       </div>
     )
   }
@@ -194,7 +188,7 @@ export default class AppsView extends React.Component {
 
   render() {
     return (
-      <div className='container' id="content" style={{maxWidth: 400}}>
+      <div className='container' id="content" style={{maxWidth: 450}}>
         <SubscriptionModal ref={this.modalRef} onSubmitModal={this.onSubmitModal} />
 
         <h5 className='lets-kill'>Let's kill your subscriptions.</h5>

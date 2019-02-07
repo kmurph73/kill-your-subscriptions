@@ -37,7 +37,8 @@
 @import 'react-toggle';
 
 $gray: rgba(0, 0, 0, 0.125);
-$darker-gray: rgba(0, 0, 0, 0.4);
+$dark-gray: rgba(0, 0, 0, 0.4);
+$darker-gray: rgba(0, 0, 0, 0.55);
 
 .center-between {
   display: flex;
@@ -68,7 +69,6 @@ h5.lets-kill {
 }
 
 .app-item {
-  cursor: pointer;
   padding-left: 10px !important;
   height: 50px;
 
@@ -107,18 +107,24 @@ h5.lets-kill {
 }
 
 .money-div {
-  color: $darker-gray;
-  width: 90px;
+  color: $dark-gray;
+}
+
+.per-what {
+  width: 19px;
 }
 
 input.money-box {
   border: 1px $gray dotted;
   height: 40px;
-  width: 50px;
+  width: 70px;
 
   color: $darker-gray;
   outline: none;
   background: none;
-  width: 100%;
+
+  &::placeholder {
+    color: $gray !important;
+  }
 }
 

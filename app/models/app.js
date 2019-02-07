@@ -61,10 +61,6 @@ class App {
     return this.apps;
   }
 
-  static getSelected() {
-    return App.getAll().filter(a => a.selected);
-  }
-
   toJSON() {
     const json = {};
 
@@ -104,11 +100,11 @@ class App {
   }
 
   static sumStartingAmountsCents() {
-    return sumBy(this.getSelected(), app => app.monthlyStartingAmount() || 0)
+    return sumBy(App.getAll(), app => app.monthlyStartingAmount() || 0)
   }
 
   static sumCurrentAmountsCents() {
-    return sumBy(this.getSelected(), app => app.monthlyCurrentAmount() || 0)
+    return sumBy(App.getAll(), app => app.monthlyCurrentAmount() || 0)
   }
 
   static saveToLocalStorage(json) {
