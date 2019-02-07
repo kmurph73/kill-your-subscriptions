@@ -1,3 +1,5 @@
+https://kmurph73.github.io/kill-your-subscriptions/
+
 # Brunch + React + Babel/ES6
 
 This is a modern JS skeleton with React for [Brunch](http://brunch.io).
