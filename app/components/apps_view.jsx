@@ -109,7 +109,6 @@ export default class AppsView extends React.Component {
       if (!confirm("Are you sure?")) {
         return;
       }
-
     }
 
     App.remove(app)
@@ -175,15 +174,22 @@ export default class AppsView extends React.Component {
   }
 
   onSubmitModal(data, uuid) {
-    if (uuid) {
-      let app = App.find(uuid);
-      Object.assign(app, data)
-    } else {
-      App.addApp(data);
-    }
+    let errors = App.validateData(data);
 
-    this.modalRef.current.toggle()
-    this.resetAppsState()
+    if (errors.length) {
+      this.modalRef.current.setErrors(errors);
+    } else {
+      if (uuid) {
+        let app = App.find(uuid);
+        Object.assign(app, data)
+      } else {
+        data.starting_amount_cents = data.current_amount_cents = data.amount * 100;
+        App.addApp(data);
+      }
+
+      this.modalRef.current.toggle()
+      this.resetAppsState()
+    }
   }
 
   render() {

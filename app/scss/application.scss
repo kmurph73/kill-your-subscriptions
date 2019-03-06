@@ -52,6 +52,10 @@ $darker-gray: rgba(0, 0, 0, 0.55);
   align-items: center;
 }
 
+.hidden {
+  display: none!important;
+}
+
 h5.lets-kill {
   text-align: center;
 }
@@ -83,6 +87,10 @@ h5.lets-kill {
     img.check {
       cursor: pointer;
     }
+  }
+
+  img {
+    cursor: pointer;
   }
 
   a.site {

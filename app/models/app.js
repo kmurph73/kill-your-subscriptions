@@ -18,6 +18,8 @@ class App {
     if (!this.uuid) {
       this.uuid = genUUID(attrs.name);
     }
+
+    this.errors = []
   }
 
   tersify(name) {
@@ -43,6 +45,16 @@ class App {
     this.selected = val
 
     App.saveToLocalStorage()
+  }
+
+  static validateData(data) {
+    let errors = [];
+
+    if (!data.name || !data.name.length > 2) {
+      errors.push(['name must be at least 3 chars']);
+    }
+
+    return errors;
   }
 
   clone() {
